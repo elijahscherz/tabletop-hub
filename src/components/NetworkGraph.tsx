@@ -1,5 +1,4 @@
-import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { NetworkEdge, NetworkNode } from '../types'
 
 type NetworkGraphProps = {
@@ -9,68 +8,76 @@ type NetworkGraphProps = {
   selectedNodeId?: string | null
 }
 
-type SimNode = NetworkNode & { fx?: number | null; fy?: number | null }
-type SimEdge = NetworkEdge & { source: SimNode | string; target: SimNode | string }
+type PositionedNode = NetworkNode & {
+  connected: boolean
+  emphasis: 'center' | 'neighbor' | 'other'
+}
 
 export function NetworkGraph({ edges, nodes, onSelectNode, selectedNodeId }: NetworkGraphProps) {
-  const [positions, setPositions] = useState<NetworkNode[]>(nodes)
+  const selectedId = selectedNodeId ?? nodes[0]?.id ?? null
 
-  useEffect(() => {
-    if (nodes.length === 0) {
-      setPositions([])
-      return
+  const { positionedNodes, visibleEdges } = useMemo(() => {
+    if (!selectedId || nodes.length === 0) {
+      return { positionedNodes: [], visibleEdges: [] }
     }
 
-    const simNodes: SimNode[] = nodes.map((node) => ({ ...node }))
-    const simEdges: SimEdge[] = edges.map((edge) => ({ ...edge }))
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]))
+    const connectedEdges = edges
+      .filter((edge) => edge.source === selectedId || edge.target === selectedId)
+      .sort((left, right) => right.value - left.value)
 
-    const simulation = forceSimulation(simNodes)
-      .force('link', forceLink(simEdges).id((node) => (node as SimNode).id).distance(18).strength(0.7))
-      .force('charge', forceManyBody().strength(-120))
-      .force('collide', forceCollide<SimNode>().radius((node) => 4 + node.value / 55))
-      .force('center', forceCenter(50, 50))
-      .alpha(1)
-      .alphaDecay(0.05)
-      .on('tick', () => {
-        setPositions(
-          simNodes.map((node) => ({
-            id: node.id,
-            value: node.value,
-            x: Math.max(8, Math.min(92, node.x ?? 50)),
-            y: Math.max(10, Math.min(90, node.y ?? 50)),
-          })),
-        )
+    const neighbors = connectedEdges
+      .slice(0, 8)
+      .map((edge) => nodeMap.get(edge.source === selectedId ? edge.target : edge.source))
+      .filter((node): node is NetworkNode => Boolean(node))
+
+    const neighborIds = new Set(neighbors.map((node) => node.id))
+    const otherNodes = nodes.filter((node) => node.id !== selectedId && !neighborIds.has(node.id)).slice(0, 3)
+
+    const centerNode = nodeMap.get(selectedId)
+    const positioned: PositionedNode[] = []
+
+    if (centerNode) {
+      positioned.push({ ...centerNode, connected: true, emphasis: 'center', x: 50, y: 46 })
+    }
+
+    neighbors.forEach((node, index) => {
+      const angle = -Math.PI / 2 + (index / Math.max(neighbors.length, 1)) * Math.PI * 2
+      const radius = neighbors.length <= 4 ? 28 : 32
+
+      positioned.push({
+        ...node,
+        connected: true,
+        emphasis: 'neighbor',
+        x: 50 + Math.cos(angle) * radius,
+        y: 46 + Math.sin(angle) * radius,
       })
+    })
 
-    return () => {
-      simulation.stop()
+    otherNodes.forEach((node, index) => {
+      positioned.push({
+        ...node,
+        connected: false,
+        emphasis: 'other',
+        x: 18 + index * 32,
+        y: 88,
+      })
+    })
+
+    return {
+      positionedNodes: positioned,
+      visibleEdges: connectedEdges.slice(0, 8),
     }
-  }, [edges, nodes])
+  }, [edges, nodes, selectedId])
 
-  const nodeMap = useMemo(() => new Map(positions.map((node) => [node.id, node])), [positions])
-  const maxNodeValue = Math.max(...positions.map((node) => node.value), 1)
-  const maxEdgeValue = Math.max(...edges.map((edge) => edge.value), 1)
-
-  function isConnected(nodeId: string) {
-    if (!selectedNodeId) {
-      return true
-    }
-
-    if (selectedNodeId === nodeId) {
-      return true
-    }
-
-    return edges.some(
-      (edge) =>
-        (edge.source === selectedNodeId && edge.target === nodeId) ||
-        (edge.target === selectedNodeId && edge.source === nodeId),
-    )
-  }
+  const nodeMap = useMemo(() => new Map(positionedNodes.map((node) => [node.id, node])), [positionedNodes])
+  const maxNodeValue = Math.max(...positionedNodes.map((node) => node.value), 1)
+  const maxEdgeValue = Math.max(...visibleEdges.map((edge) => edge.value), 1)
 
   return (
     <div className="network-wrap">
       <svg className="network-svg" viewBox="0 0 100 100">
-        {edges.map((edge) => {
+        {visibleEdges.map((edge) => {
           const source = nodeMap.get(edge.source)
           const target = nodeMap.get(edge.target)
 
@@ -81,8 +88,9 @@ export function NetworkGraph({ edges, nodes, onSelectNode, selectedNodeId }: Net
           return (
             <line
               key={`${edge.source}-${edge.target}`}
-              stroke={`rgba(168, 85, 247, ${selectedNodeId && edge.source !== selectedNodeId && edge.target !== selectedNodeId ? 0.08 : 0.18 + edge.value / (maxEdgeValue * 1.8)})`}
-              strokeWidth={0.5 + (edge.value / maxEdgeValue) * 1.8}
+              stroke={`rgba(168, 85, 247, ${0.22 + edge.value / (maxEdgeValue * 1.6)})`}
+              strokeLinecap="round"
+              strokeWidth={0.8 + (edge.value / maxEdgeValue) * 2.2}
               x1={source.x}
               x2={target.x}
               y1={source.y}
@@ -91,16 +99,22 @@ export function NetworkGraph({ edges, nodes, onSelectNode, selectedNodeId }: Net
           )
         })}
 
-        {positions.map((node) => {
-          const radius = 2.8 + (node.value / maxNodeValue) * 4.6
-          const active = selectedNodeId === null || selectedNodeId === node.id
-          const connected = isConnected(node.id)
+        {positionedNodes.map((node) => {
+          const radius =
+            node.emphasis === 'center'
+              ? 5.2 + (node.value / maxNodeValue) * 3.2
+              : node.emphasis === 'neighbor'
+                ? 3.8 + (node.value / maxNodeValue) * 3.2
+                : 3.2
+
+          const glowFill = node.emphasis === 'center' ? 'rgba(236, 72, 153, 0.34)' : 'rgba(139, 92, 246, 0.18)'
+          const fill = node.emphasis === 'center' ? '#ec4899' : node.connected ? '#8b5cf6' : 'rgba(148, 163, 184, 0.75)'
 
           return (
             <g className="network-node" key={node.id} onClick={() => onSelectNode?.(node.id)}>
-              <circle cx={node.x} cy={node.y} fill={active ? 'rgba(236, 72, 153, 0.34)' : 'rgba(236, 72, 153, 0.1)'} r={radius + 1.6} />
-              <circle cx={node.x} cy={node.y} fill={active ? '#ec4899' : '#8b5cf6'} opacity={connected ? 1 : 0.35} r={radius} />
-              <text className="network-label" textAnchor="middle" x={node.x} y={node.y + radius + 3.8}>
+              <circle cx={node.x} cy={node.y} fill={glowFill} r={radius + 1.8} />
+              <circle cx={node.x} cy={node.y} fill={fill} r={radius} />
+              <text className={`network-label${node.connected ? '' : ' is-muted'}`} textAnchor="middle" x={node.x} y={node.y + radius + 4.2}>
                 {node.id}
               </text>
             </g>

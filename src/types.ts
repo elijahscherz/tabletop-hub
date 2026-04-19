@@ -10,6 +10,7 @@ export type RawChallenge = {
 }
 
 export type RawGame = {
+  bggId?: number
   copies?: RawGameCopy[]
   id: number
   name: string
@@ -150,6 +151,7 @@ export type GameRow = {
 export type OwnedGame = {
   acquisitionDate: string
   acquisitionYear: string
+  bggId: number | null
   coverImageUrl: string
   name: string
   pricePaid: number
@@ -228,6 +230,7 @@ export type GroupRecommendation = {
 
 export type CollectionInsight = {
   acquisitionDate: string
+  bggId: number | null
   coverImageUrl: string
   costPerHour: number | null
   costPerPlay: number | null

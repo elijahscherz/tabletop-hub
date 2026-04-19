@@ -48,24 +48,43 @@ export function SocialPage({ metrics }: SocialPageProps) {
 
   return (
     <div className="page-grid">
-      <ChartCard subtitle="The recurring duo graph starts here, before a network view arrives later." title="Top Pairings">
+      <ChartCard className="social-feature-card" subtitle="Who shows up most often in the selected slice." title="Most Frequent Players">
+        <div className="chart-wrap social-ring-wrap">
+          <div className="social-ring-center" aria-hidden="true">
+            <span className="mini-heading">Top player</span>
+            <strong>{metrics.topPlayers[0]?.label ?? 'No data'}</strong>
+            <span>{metrics.topPlayers[0]?.value ?? 0} plays</span>
+          </div>
+          <ResponsiveContainer>
+            <RadialBarChart
+              barSize={12}
+              cx="50%"
+              cy="50%"
+              data={metrics.topPlayers.map((player, index) => ({ ...player, fill: palette[index % palette.length] }))}
+              innerRadius="42%"
+              outerRadius="82%"
+              startAngle={90}
+              endAngle={-270}
+            >
+              <PolarAngleAxis dataKey="value" domain={[0, metrics.topPlayers[0]?.value ?? 1]} tick={false} type="number" />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Player: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
+              <RadialBar background={{ fill: 'rgba(255, 255, 255, 0.06)' }} dataKey="value" cornerRadius={10} label={{ fill: '#e5e7eb', position: 'insideStart' }} />
+            </RadialBarChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+
+      <ChartCard className="social-feature-card" subtitle="A simple view of which days most often turn into game nights." title="Weekday Rhythm">
         <div className="chart-wrap social-highlight-panel">
           <ResponsiveContainer>
-            <BarChart
-              data={metrics.pairings.map((pairing) => ({
-                label: `${pairing.playerA} + ${pairing.playerB}`,
-                value: pairing.value,
-              }))}
-              layout="vertical"
-              margin={{ left: 16, right: 12 }}
-            >
-              <CartesianGrid stroke="#2d244a" horizontal={false} />
-              <XAxis allowDecimals={false} stroke="#9ca3af" type="number" />
-              <YAxis dataKey="label" stroke="#9ca3af" type="category" width={150} />
-              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Pairing: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Shared plays' }} />} />
-              <Bar dataKey="value" radius={[0, 8, 8, 0]}>
-                {metrics.pairings.map((pairing, index) => (
-                  <Cell fill={palette[index % palette.length]} key={`${pairing.playerA}-${pairing.playerB}`} />
+            <BarChart data={metrics.weekdayActivity}>
+              <CartesianGrid stroke="#2d244a" vertical={false} />
+              <XAxis dataKey="label" stroke="#9ca3af" />
+              <YAxis allowDecimals={false} stroke="#9ca3af" />
+              <Tooltip content={<ChartTooltip labelTitle="Day" seriesLabels={{ value: 'Plays' }} />} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {metrics.weekdayActivity.map((entry, index) => (
+                  <Cell fill={palette[index % palette.length]} key={entry.label} />
                 ))}
               </Bar>
             </BarChart>
@@ -73,7 +92,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
         </div>
       </ChartCard>
 
-      <ChartCard subtitle="This is the social backbone of the collection: dense lines mean people really do show up together." title="Player Network">
+      <ChartCard className="social-network-card" subtitle="This is the social backbone of the collection: dense lines mean people really do show up together." title="Player Network">
         <NetworkGraph
           edges={metrics.networkEdges}
           nodes={metrics.networkNodes}
@@ -102,23 +121,27 @@ export function SocialPage({ metrics }: SocialPageProps) {
         ) : null}
       </ChartCard>
 
-      <ChartCard subtitle="Who shows up most often in the selected slice." title="Most Frequent Players">
-        <div className="chart-wrap">
+      <ChartCard subtitle="The recurring duo graph starts here, before a network view arrives later." title="Top Pairings">
+        <div className="chart-wrap social-highlight-panel">
           <ResponsiveContainer>
-            <RadialBarChart
-              barSize={14}
-              cx="50%"
-              cy="50%"
-              data={metrics.topPlayers.map((player, index) => ({ ...player, fill: palette[index % palette.length] }))}
-              innerRadius="18%"
-              outerRadius="92%"
-              startAngle={90}
-              endAngle={-270}
+            <BarChart
+              data={metrics.pairings.map((pairing) => ({
+                label: `${pairing.playerA} + ${pairing.playerB}`,
+                value: pairing.value,
+              }))}
+              layout="vertical"
+              margin={{ left: 16, right: 12 }}
             >
-              <PolarAngleAxis dataKey="value" domain={[0, metrics.topPlayers[0]?.value ?? 1]} tick={false} type="number" />
-              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Player: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
-              <RadialBar background dataKey="value" cornerRadius={10} label={{ fill: '#e5e7eb', position: 'insideStart' }} />
-            </RadialBarChart>
+              <CartesianGrid stroke="#2d244a" horizontal={false} />
+              <XAxis allowDecimals={false} stroke="#9ca3af" type="number" />
+              <YAxis dataKey="label" stroke="#9ca3af" type="category" width={150} />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Pairing: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Shared plays' }} />} />
+              <Bar dataKey="value" radius={[0, 8, 8, 0]}>
+                {metrics.pairings.map((pairing, index) => (
+                  <Cell fill={palette[index % palette.length]} key={`${pairing.playerA}-${pairing.playerB}`} />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </ChartCard>
@@ -146,24 +169,6 @@ export function SocialPage({ metrics }: SocialPageProps) {
               <strong className="glow-value">{table.value}</strong>
             </div>
           ))}
-        </div>
-      </ChartCard>
-
-      <ChartCard subtitle="A simple view of which days most often turn into game nights." title="Weekday Rhythm">
-        <div className="chart-wrap">
-          <ResponsiveContainer>
-            <BarChart data={metrics.weekdayActivity}>
-              <CartesianGrid stroke="#2d244a" vertical={false} />
-              <XAxis dataKey="label" stroke="#9ca3af" />
-              <YAxis allowDecimals={false} stroke="#9ca3af" />
-              <Tooltip content={<ChartTooltip labelTitle="Day" seriesLabels={{ value: 'Plays' }} />} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                {metrics.weekdayActivity.map((entry, index) => (
-                  <Cell fill={palette[index % palette.length]} key={entry.label} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
         </div>
       </ChartCard>
 

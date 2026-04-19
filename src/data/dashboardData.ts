@@ -258,6 +258,7 @@ export function normalizeData(): NormalizedData {
       return {
         acquisitionDate,
         acquisitionYear: acquisitionDate ? acquisitionDate.slice(0, 4) : 'Unknown',
+        bggId: typeof game.bggId === 'number' ? game.bggId : null,
         coverImageUrl: game.urlImage ?? game.urlThumb ?? '',
         name: game.name,
         pricePaid,
@@ -633,6 +634,7 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
 
       return {
         acquisitionDate: ownedGame.acquisitionDate,
+        bggId: ownedGame.bggId,
         coverImageUrl: ownedGame.coverImageUrl,
         costPerPlay,
         costPerHour,
@@ -805,7 +807,7 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
         value: bestValueGame?.name ?? 'N/A',
       },
       {
-        label: 'Priciest shelf-sitter',
+        label: 'Highest-value shelf-sitter',
         note: mostExpensiveUnplayed ? `$${mostExpensiveUnplayed.pricePaid.toFixed(2)} with zero plays` : 'Everything priced has been played',
         value: mostExpensiveUnplayed?.name ?? 'N/A',
       },
@@ -820,8 +822,8 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
     collectionRoiByYear,
     collectionStats: [
       {
-        label: 'Tracked spend',
-        note: 'Owned games with recorded purchase price',
+        label: 'Tracked value',
+        note: 'Owned games with recorded value data',
         value: `$${totalSpent.toFixed(2)}`,
       },
       {
@@ -830,13 +832,13 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
         value: totalHoursPlayed.toFixed(1),
       },
       {
-        label: 'Avg cost / hour',
-        note: 'Spend divided by logged hours',
+        label: 'Avg value / hour',
+        note: 'Tracked value divided by logged hours',
         value: `$${averageCostPerHour.toFixed(2)}`,
       },
       {
         label: 'Owned, unplayed',
-        note: 'Priced games with zero plays in the data',
+        note: 'Games with tracked value and zero plays in the data',
         value: neverPlayedOwned.toString(),
       },
     ],

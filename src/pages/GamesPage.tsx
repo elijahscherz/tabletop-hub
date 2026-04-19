@@ -22,6 +22,10 @@ type GamesPageProps = {
 
 const palette = ['#8b5cf6', '#ec4899', '#22c55e', '#f59e0b', '#38bdf8', '#f97316', '#14b8a6', '#f43f5e']
 
+function toBackgroundImage(url: string) {
+  return `url("${url.replaceAll('"', '\\"')}")`
+}
+
 export function GamesPage({ metrics }: GamesPageProps) {
   const [query, setQuery] = useState('')
   const visibleRows = metrics.gameRows.filter((game) => game.name.toLowerCase().includes(query.toLowerCase()))
@@ -34,7 +38,7 @@ export function GamesPage({ metrics }: GamesPageProps) {
             <article
               className="thumbnail-card"
               key={game.name}
-              style={{ '--thumb-image': game.coverImageUrl ? `url(${game.coverImageUrl})` : 'none' } as CSSProperties}
+              style={{ '--thumb-image': game.coverImageUrl ? toBackgroundImage(game.coverImageUrl) : 'none' } as CSSProperties}
             >
               <div className="thumbnail-card-content">
                 <p className="eyebrow">{game.playCount} logged plays</p>
@@ -56,7 +60,7 @@ export function GamesPage({ metrics }: GamesPageProps) {
             <article
               className="thumbnail-card recommend-card"
               key={game.name}
-              style={{ '--thumb-image': game.coverImageUrl ? `url(${game.coverImageUrl})` : 'none' } as CSSProperties}
+              style={{ '--thumb-image': game.coverImageUrl ? toBackgroundImage(game.coverImageUrl) : 'none' } as CSSProperties}
             >
               <div className="thumbnail-card-content">
                 <p className="eyebrow">Fit score {game.fitScore}</p>

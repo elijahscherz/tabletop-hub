@@ -21,8 +21,14 @@ type CollectionPageProps = {
   metrics: DashboardMetrics
 }
 
+function toBggUrl(bggId: number | null) {
+  return bggId ? `https://boardgamegeek.com/boardgame/${bggId}` : null
+}
+
 export function CollectionPage({ metrics }: CollectionPageProps) {
   const currencyValue = (value: unknown) => (typeof value === 'number' ? `$${value.toFixed(2)}` : String(value ?? ''))
+  const shelfGames = metrics.collectionInsights.filter((game) => game.playCount > 0).slice(0, 16)
+  const visibleShelfGames = shelfGames.length > 0 ? shelfGames : metrics.collectionInsights.slice(0, 16)
 
   const scatterData = metrics.collectionInsights.slice(0, 50).map((game) => ({
     label: game.name,
@@ -53,32 +59,70 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
         ))}
       </section>
 
-      <ChartCard subtitle="Recorded spend over acquisition years from the collection export." title="Spend Over Time">
+      <ChartCard
+        className="full-width"
+        subtitle="Box covers from the current filtered slice, with quick links out to BoardGameGeek when available."
+        title="Shelf Highlights"
+      >
+        <div className="collection-shelf-grid">
+          {visibleShelfGames.map((game) => {
+            const bggUrl = toBggUrl(game.bggId)
+            const content = (
+              <>
+                {game.coverImageUrl ? <img alt={game.name} className="collection-shelf-image" src={game.coverImageUrl} /> : <div className="collection-shelf-image" />}
+                <div className="collection-shelf-overlay">
+                  <p className="eyebrow">{game.playCount} plays</p>
+                  <h3>{game.name}</h3>
+                  <div className="collection-shelf-meta">
+                    <span className="thumb-badge">Value {currencyValue(game.pricePaid)}</span>
+                    {game.rating > 0 ? <span className="thumb-badge">Rating {game.rating.toFixed(1)}</span> : null}
+                    {bggUrl ? <span className="thumb-badge">Open on BGG</span> : null}
+                  </div>
+                </div>
+              </>
+            )
+
+            return (
+              <article className="collection-shelf-card" key={game.name}>
+                {bggUrl ? (
+                  <a className="collection-shelf-link" href={bggUrl} rel="noreferrer" target="_blank">
+                    {content}
+                  </a>
+                ) : (
+                  <div className="collection-shelf-link">{content}</div>
+                )}
+              </article>
+            )
+          })}
+        </div>
+      </ChartCard>
+
+      <ChartCard subtitle="Recorded collection value over acquisition years from the export data." title="Value Over Time">
         <div className="chart-wrap">
           <ResponsiveContainer>
             <BarChart data={metrics.priceByYear}>
               <CartesianGrid stroke="#2d244a" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
-              <Tooltip content={<ChartTooltip labelTitle="Year" seriesLabels={{ value: 'Spend' }} valueFormatter={currencyValue} />} />
+              <Tooltip content={<ChartTooltip labelTitle="Year" seriesLabels={{ value: 'Value' }} valueFormatter={currencyValue} />} />
               <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </ChartCard>
 
-      <ChartCard subtitle="Spending by tag helps answer where the money is actually concentrated in the collection." title="Spend By Tag">
+      <ChartCard subtitle="Collection value by tag helps show where the shelf value is concentrated." title="Value By Tag">
         <div className="chart-wrap">
           <ResponsiveContainer>
             <PieChart>
               <Pie data={metrics.spendByTag} dataKey="value" innerRadius={54} nameKey="label" outerRadius={104} />
-              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Spend' }} valueFormatter={currencyValue} />} />
+               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Value' }} valueFormatter={currencyValue} />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </ChartCard>
 
-      <ChartCard subtitle="Return on investment by acquisition year shows whether some buying eras were much healthier than others." title="ROI By Year">
+      <ChartCard subtitle="Value efficiency by acquisition year shows whether some collecting eras have delivered more table time than others." title="Value Efficiency By Year">
         <div className="chart-wrap">
           <ResponsiveContainer>
             <LineChart data={metrics.collectionRoiByYear}>
@@ -86,25 +130,25 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
               <Tooltip
-                content={<ChartTooltip labelTitle="Year" seriesLabels={{ spend: 'Spend', plays: 'Plays', costPerPlay: 'Cost per play' }} valueFormatter={(value, entry) => (entry.dataKey === 'spend' || entry.dataKey === 'costPerPlay' ? currencyValue(value) : typeof value === 'number' ? value.toLocaleString() : String(value ?? ''))} />}
+                content={<ChartTooltip labelTitle="Year" seriesLabels={{ spend: 'Value', plays: 'Plays', costPerPlay: 'Value per play' }} valueFormatter={(value, entry) => (entry.dataKey === 'spend' || entry.dataKey === 'costPerPlay' ? currencyValue(value) : typeof value === 'number' ? value.toLocaleString() : String(value ?? ''))} />}
               />
-              <Line dataKey="spend" name="Spend" stroke="#f59e0b" strokeWidth={2} type="monotone" />
+              <Line dataKey="spend" name="Value" stroke="#f59e0b" strokeWidth={2} type="monotone" />
               <Line dataKey="plays" name="Plays" stroke="#8b5cf6" strokeWidth={2} type="monotone" />
-              <Line dataKey="costPerPlay" name="Cost/play" stroke="#22c55e" strokeWidth={2} type="monotone" />
+              <Line dataKey="costPerPlay" name="Value/play" stroke="#22c55e" strokeWidth={2} type="monotone" />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </ChartCard>
 
-      <ChartCard subtitle="This is the key value-for-money view: spend on one axis, time on table on the other." title="Price Vs Hours Played">
+      <ChartCard subtitle="A simple value-versus-usefulness view: collection value on one axis, time on table on the other." title="Value Vs Hours Played">
         <div className="chart-wrap">
           <ResponsiveContainer>
             <ScatterChart margin={{ bottom: 12, left: 10, right: 12, top: 8 }}>
               <CartesianGrid stroke="#2d244a" />
-              <XAxis dataKey="x" name="Price paid" stroke="#9ca3af" type="number" />
+              <XAxis dataKey="x" name="Tracked value" stroke="#9ca3af" type="number" />
               <YAxis dataKey="y" name="Hours played" stroke="#9ca3af" type="number" />
               <Tooltip
-                content={<ChartTooltip labelFormatter={(_, payload) => `Game: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ x: 'Price paid', y: 'Hours played', z: 'Play count' }} valueFormatter={(value, entry) => (entry.dataKey === 'x' ? currencyValue(value) : typeof value === 'number' ? value.toFixed(1) : String(value ?? ''))} />}
+                content={<ChartTooltip labelFormatter={(_, payload) => `Game: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ x: 'Value', y: 'Hours played', z: 'Play count' }} valueFormatter={(value, entry) => (entry.dataKey === 'x' ? currencyValue(value) : typeof value === 'number' ? value.toFixed(1) : String(value ?? ''))} />}
                 cursor={{ strokeDasharray: '4 4' }}
               />
               <Scatter data={scatterData} fill="#22c55e" />
@@ -119,11 +163,11 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
             <thead>
               <tr>
                 <th>Game</th>
-                <th>Price paid</th>
+                <th>Tracked value</th>
                 <th>Plays</th>
                 <th>Hours</th>
-                <th>Cost/play</th>
-                <th>Cost/hour</th>
+                <th>Value/play</th>
+                <th>Value/hour</th>
                 <th>Days to first play</th>
                 <th>Value score</th>
               </tr>

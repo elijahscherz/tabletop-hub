@@ -521,6 +521,7 @@ thead th {
 
 .heatmap-wrap {
   display: grid;
+  position: relative;
   gap: 0.75rem;
 }
 
@@ -567,6 +568,15 @@ thead th {
   transform: scale(1.05);
 }
 
+.heatmap-overlay-tooltip,
+.calendar-overlay-tooltip {
+  position: absolute;
+  z-index: 6;
+  min-width: 150px;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 0.55rem));
+}
+
 .heatmap-popover,
 .calendar-popover {
   position: absolute;
@@ -592,6 +602,79 @@ thead th {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.95rem;
+}
+
+.collection-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.collection-shelf-card {
+  position: relative;
+}
+
+.collection-shelf-card:nth-child(4n + 2),
+.collection-shelf-card:nth-child(4n + 4) {
+  transform: translateY(0.9rem);
+}
+
+.collection-shelf-link {
+  display: block;
+  position: relative;
+  min-height: 240px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(15, 13, 25, 0.4), rgba(15, 13, 25, 0.92));
+  color: inherit;
+  text-decoration: none;
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.collection-shelf-link:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(196, 181, 253, 0.26);
+  box-shadow: 0 28px 48px rgba(0, 0, 0, 0.32);
+}
+
+.collection-shelf-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 200ms ease, filter 200ms ease;
+}
+
+.collection-shelf-link:hover .collection-shelf-image {
+  transform: scale(1.04);
+  filter: saturate(1.06);
+}
+
+.collection-shelf-overlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 240px;
+  padding: 1rem;
+  background: linear-gradient(180deg, rgba(9, 8, 15, 0.06), rgba(9, 8, 15, 0.92));
+}
+
+.collection-shelf-overlay h3 {
+  margin: 0.25rem 0 0.45rem;
+}
+
+.collection-shelf-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 .recommend-grid {
@@ -667,11 +750,15 @@ thead th {
 }
 
 .network-wrap {
+  position: relative;
   min-height: 380px;
+  padding: 0.5rem;
   border-radius: 20px;
   background:
-    radial-gradient(circle at center, rgba(56, 189, 248, 0.1), transparent 32%),
-    linear-gradient(180deg, rgba(15, 13, 25, 0.35), rgba(15, 13, 25, 0.72));
+    radial-gradient(circle at center, rgba(56, 189, 248, 0.12), transparent 34%),
+    radial-gradient(circle at top, rgba(168, 85, 247, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(15, 13, 25, 0.48), rgba(15, 13, 25, 0.9));
+  overflow: hidden;
 }
 
 .network-svg {
@@ -681,7 +768,14 @@ thead th {
 
 .network-label {
   fill: #e2e8f0;
-  font-size: 3px;
+  font-size: 2.7px;
+  paint-order: stroke;
+  stroke: rgba(9, 8, 15, 0.85);
+  stroke-width: 0.7px;
+}
+
+.network-label.is-muted {
+  fill: #94a3b8;
 }
 
 .network-node {
@@ -693,6 +787,55 @@ thead th {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
   margin-top: 1rem;
+}
+
+.social-feature-card {
+  grid-column: span 6;
+}
+
+.social-network-card {
+  grid-column: 1 / -1;
+}
+
+.social-ring-wrap {
+  position: relative;
+  height: 340px;
+  padding: 0.5rem;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at center, rgba(139, 92, 246, 0.18), transparent 34%),
+    radial-gradient(circle at 50% 50%, rgba(15, 13, 25, 0.96) 0, rgba(15, 13, 25, 0.96) 18%, rgba(15, 13, 25, 0.78) 18.5%, rgba(15, 13, 25, 0.48) 100%);
+  overflow: hidden;
+}
+
+.social-ring-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  gap: 0.3rem;
+  width: 148px;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.social-ring-center strong {
+  font-size: 1.2rem;
+  line-height: 1.2;
+  color: #f8fafc;
+  text-wrap: balance;
+}
+
+.social-ring-center span:last-child {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.social-ring-center .mini-heading {
+  margin: 0;
 }
 
 .collection-callouts h3 {
@@ -722,6 +865,7 @@ thead th {
 .calendar-grid-panel {
   display: grid;
   gap: 0.45rem;
+  position: relative;
 }
 
 .calendar-weekdays {
@@ -838,6 +982,7 @@ thead th {
   .challenge-grid,
   .player-cards,
   .facts-list,
+  .collection-shelf-grid,
   .thumbnail-grid,
   .recommend-grid,
   .network-detail-grid {
@@ -847,6 +992,11 @@ thead th {
   .panel,
   .panel.full-width,
   .full-width {
+    grid-column: span 2;
+  }
+
+  .social-feature-card,
+  .social-network-card {
     grid-column: span 2;
   }
 
@@ -903,6 +1053,7 @@ thead th {
   .facts-list,
   .split-pies,
   .player-visual-grid,
+  .collection-shelf-grid,
   .thumbnail-grid,
   .recommend-grid,
   .network-detail-grid {
