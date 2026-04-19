@@ -5,6 +5,7 @@ import {
   TrophyIcon,
   UserGroupIcon,
   UserIcon,
+  WrenchScrewdriverIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { useState, type ReactNode } from 'react'
@@ -21,6 +22,7 @@ const navItems = [
   { icon: CircleStackIcon, label: 'Collection', to: '/collection' },
   { icon: TrophyIcon, label: 'Challenges', to: '/challenges' },
   { icon: UserIcon, label: 'Players', to: '/players' },
+  { icon: WrenchScrewdriverIcon, label: 'Tools', to: '/tools' },
 ]
 
 export function AppShell({ children }: AppShellProps) {

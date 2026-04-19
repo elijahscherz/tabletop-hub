@@ -261,6 +261,17 @@ button {
   color: #cbd5e1;
 }
 
+.tools-hero {
+  align-items: flex-start;
+}
+
+.tools-context-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
 .hero-orbs {
   display: flex;
   gap: 1rem;
@@ -314,6 +325,179 @@ button {
 
 .leaderboard-row:last-child {
   border-bottom: 0;
+}
+
+.tools-player-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.tools-player-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+  text-align: left;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.tools-player-chip strong {
+  color: #c4b5fd;
+}
+
+.tools-player-chip:hover,
+.tools-player-chip.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(196, 181, 253, 0.22);
+}
+
+.tools-player-chip.is-active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(236, 72, 153, 0.14));
+}
+
+.tools-selected-panel {
+  min-height: 120px;
+}
+
+.tools-action-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.tools-button-row,
+.tools-inline-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.tools-inline-controls label {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tools-inline-controls span {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.tools-inline-controls select {
+  min-width: 140px;
+  padding: 0.8rem 0.95rem;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tools-team-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.tools-result-card h3 {
+  margin-bottom: 0.35rem;
+}
+
+.tools-scaffold-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.finger-picker-shell {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.finger-picker-stage {
+  position: relative;
+  min-height: 340px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(12, 10, 20, 0.78), rgba(12, 10, 20, 0.96));
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.finger-picker-stage.has-selection {
+  box-shadow: 0 0 0 1px rgba(196, 181, 253, 0.16) inset;
+}
+
+.finger-picker-grid,
+.finger-picker-copy {
+  position: absolute;
+  inset: 0;
+}
+
+.finger-picker-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9));
+}
+
+.finger-picker-copy {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.1rem;
+  background: linear-gradient(180deg, rgba(12, 10, 20, 0.04), rgba(12, 10, 20, 0.52) 60%, rgba(12, 10, 20, 0.88));
+  pointer-events: none;
+}
+
+.finger-picker-copy h3 {
+  margin: 0.2rem 0 0.35rem;
+}
+
+.finger-picker-copy p:last-child {
+  margin: 0;
+  max-width: 36ch;
+  color: #cbd5e1;
+}
+
+.finger-picker-touch {
+  position: absolute;
+  z-index: 2;
+  width: 82px;
+  height: 82px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), rgba(139, 92, 246, 0.18) 58%, rgba(139, 92, 246, 0.04));
+  box-shadow:
+    0 0 0 10px rgba(139, 92, 246, 0.08),
+    0 18px 30px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%);
+  transition:
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.finger-picker-touch.is-picked {
+  border-color: rgba(255, 255, 255, 0.95);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.52), rgba(34, 197, 94, 0.34) 55%, rgba(34, 197, 94, 0.06));
+  box-shadow:
+    0 0 0 14px rgba(34, 197, 94, 0.18),
+    0 0 48px rgba(34, 197, 94, 0.34),
+    0 18px 30px rgba(0, 0, 0, 0.2);
+}
+
+.tools-note {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
 }
 
 .rank-chip,
@@ -1000,6 +1184,10 @@ thead th {
     grid-column: span 2;
   }
 
+  .tools-scaffold-grid {
+    grid-template-columns: 1fr;
+  }
+
   .overview-side-card,
   .overview-wide-card {
     grid-column: span 2;
@@ -1035,6 +1223,10 @@ thead th {
   .topbar {
     gap: 1rem;
     align-items: flex-start;
+  }
+
+  .tools-context-summary {
+    justify-content: flex-start;
   }
 
   .hero-band {

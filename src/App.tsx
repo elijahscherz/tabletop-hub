@@ -10,6 +10,7 @@ import { GamesPage } from './pages/GamesPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { PlayersPage } from './pages/PlayersPage'
 import { SocialPage } from './pages/SocialPage'
+import { ToolsPage } from './pages/ToolsPage'
 
 const normalized = normalizeData()
 const dayPresets = ['week', 'month', 'quarter', 'year', 'all'] as const
@@ -106,6 +107,7 @@ function App() {
         <Route element={<CollectionPage metrics={metrics} />} path="/collection" />
         <Route element={<ChallengesPage metrics={metrics} />} path="/challenges" />
         <Route element={<PlayersPage metrics={metrics} />} path="/players" />
+        <Route element={<ToolsPage filters={filters} metrics={metrics} normalized={normalized} />} path="/tools" />
       </Routes>
     </AppShell>
   )
