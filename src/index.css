@@ -31,6 +31,12 @@ select {
   font: inherit;
 }
 
+option,
+optgroup {
+  color: #f8fafc;
+  background: #140f24;
+}
+
 button,
 select,
 input {
@@ -362,6 +368,23 @@ button {
   margin-bottom: 1.25rem;
 }
 
+.date-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.preset-button {
+  padding: 0.65rem 0.9rem;
+}
+
+.preset-button.is-active {
+  background: rgba(139, 92, 246, 0.18);
+  color: #f5f3ff;
+  box-shadow: 0 0 0 1px rgba(196, 181, 253, 0.18) inset;
+}
+
 .filters-grid {
   flex-wrap: wrap;
   gap: 1rem;
@@ -397,6 +420,53 @@ button {
 .ghost-button:hover,
 .icon-button:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+.chart-tooltip {
+  min-width: 180px;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(196, 181, 253, 0.24);
+  border-radius: 16px;
+  background: rgba(12, 10, 20, 0.94);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  color: #f8fafc;
+  backdrop-filter: blur(14px);
+}
+
+.chart-tooltip-title {
+  margin: 0 0 0.6rem;
+  color: #ddd6fe;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.chart-tooltip-body {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.chart-tooltip-row,
+.chart-tooltip-label {
+  display: flex;
+  align-items: center;
+}
+
+.chart-tooltip-row {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chart-tooltip-label {
+  gap: 0.55rem;
+  color: #cbd5e1;
+}
+
+.chart-tooltip-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 
 .search-input:focus,
@@ -477,6 +547,10 @@ thead th {
   gap: 0.45rem;
 }
 
+.heatmap-cell-frame {
+  position: relative;
+}
+
 .heatmap-cell {
   height: 30px;
   border-radius: 10px;
@@ -491,6 +565,27 @@ thead th {
 
 .heatmap-cell:hover {
   transform: scale(1.05);
+}
+
+.heatmap-popover,
+.calendar-popover {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.55rem);
+  z-index: 6;
+  min-width: 150px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(6px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.heatmap-cell-frame:hover .heatmap-popover,
+.calendar-cell-frame:hover .calendar-popover {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .thumbnail-grid {
@@ -624,6 +719,11 @@ thead th {
   gap: 0.5rem;
 }
 
+.calendar-grid-panel {
+  display: grid;
+  gap: 0.45rem;
+}
+
 .calendar-weekdays {
   display: grid;
   grid-template-rows: repeat(7, 12px);
@@ -639,10 +739,40 @@ thead th {
   gap: 0.28rem;
 }
 
+.calendar-months {
+  display: grid;
+  grid-template-columns: repeat(54, minmax(0, 1fr));
+  gap: 0.28rem;
+  color: #94a3b8;
+  font-size: 0.68rem;
+}
+
+.calendar-months span {
+  white-space: nowrap;
+}
+
+.calendar-cell-frame {
+  position: relative;
+}
+
 .calendar-cell {
+  width: 100%;
+  height: 100%;
   border-radius: 3px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.04);
+}
+
+.overview-wide-card {
+  grid-column: span 8;
+}
+
+.overview-side-card {
+  grid-column: span 4;
+}
+
+.overview-side-chart {
+  height: 280px;
 }
 
 .game-name-cell {
@@ -719,6 +849,11 @@ thead th {
   .full-width {
     grid-column: span 2;
   }
+
+  .overview-side-card,
+  .overview-wide-card {
+    grid-column: span 2;
+  }
 }
 
 @media (max-width: 900px) {
@@ -780,6 +915,10 @@ thead th {
     grid-column: 1 / -1;
   }
 
+  .date-presets {
+    width: 100%;
+  }
+
   .leaderboard-row,
   .panel-header,
   .topbar,
@@ -802,6 +941,10 @@ thead th {
   .heatmap-row {
     grid-template-columns: 52px repeat(12, minmax(18px, 1fr));
     gap: 0.3rem;
+  }
+
+  .calendar-months {
+    font-size: 0.62rem;
   }
 
   .heatmap-cell {

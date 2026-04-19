@@ -31,7 +31,7 @@ export function AppShell({ children }: AppShellProps) {
       <aside className={`sidebar ${mobileOpen ? 'is-open' : ''}`}>
         <div className="brand-row">
           <div>
-            <p className="eyebrow">Board Game Intelligence</p>
+            <p className="eyebrow">Tabletop Hub</p>
             <h1>Dashboard</h1>
           </div>
           <button className="icon-button mobile-only" onClick={() => setMobileOpen(false)} type="button">
@@ -52,10 +52,6 @@ export function AppShell({ children }: AppShellProps) {
             </NavLink>
           ))}
         </nav>
-
-        <div className="sidebar-footer">
-          <p>Auto-loading the bundled export so the app opens straight into your history.</p>
-        </div>
       </aside>
 
       <div className="content-shell">
@@ -64,7 +60,7 @@ export function AppShell({ children }: AppShellProps) {
             <Bars3Icon />
           </button>
           <div>
-            <p className="eyebrow">Personal analytics</p>
+            <p className="eyebrow">Play history</p>
             <h2>Years of play history, social patterns, and collection signals</h2>
           </div>
         </header>

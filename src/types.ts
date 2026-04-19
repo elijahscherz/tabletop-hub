@@ -259,6 +259,7 @@ export type CalendarDay = {
 export type CalendarYear = {
   days: CalendarDay[]
   label: string
+  months: Array<{ label: string; week: number }>
 }
 
 export type CollectionEconomicsDatum = {

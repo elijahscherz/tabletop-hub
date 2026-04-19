@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { ChartTooltip } from '../components/ChartTooltip'
 import type { DashboardMetrics } from '../types'
 
 type PlayersPageProps = {
@@ -91,7 +92,7 @@ export function PlayersPage({ metrics }: PlayersPageProps) {
                 <CartesianGrid stroke="#2d244a" vertical={false} />
                 <XAxis dataKey="label" stroke="#9ca3af" />
                 <YAxis allowDecimals={false} stroke="#9ca3af" />
-                <Tooltip />
+                <Tooltip content={<ChartTooltip labelTitle="Month" seriesLabels={{ value: 'Plays' }} />} />
                 <Bar dataKey="value" fill="#22c55e" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -105,7 +106,7 @@ export function PlayersPage({ metrics }: PlayersPageProps) {
                     <Cell fill={palette[index % palette.length]} key={tag.label} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
               </PieChart>
             </ResponsiveContainer>
             <ResponsiveContainer>
@@ -115,7 +116,7 @@ export function PlayersPage({ metrics }: PlayersPageProps) {
                     <Cell fill={palette[(index + 2) % palette.length]} key={venue.label} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Venue: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Sessions' }} />} />
               </PieChart>
             </ResponsiveContainer>
           </div>

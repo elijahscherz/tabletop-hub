@@ -2,17 +2,27 @@ import type { ChangeEvent } from 'react'
 import type { FilterState, NormalizedData } from '../types'
 
 type FilterBarProps = {
+  activeDatePreset: 'all' | 'month' | 'quarter' | 'week' | 'year' | null
   filters: FilterState
   normalized: NormalizedData
+  onApplyDatePreset: (preset: 'all' | 'month' | 'quarter' | 'week' | 'year') => void
   onChange: (next: FilterState) => void
   onReset: () => void
 }
+
+const presetButtons = [
+  { label: 'Last week', value: 'week' },
+  { label: 'Last month', value: 'month' },
+  { label: 'Last 3 months', value: 'quarter' },
+  { label: 'Last year', value: 'year' },
+  { label: 'All time', value: 'all' },
+] as const
 
 function parseNullableNumber(event: ChangeEvent<HTMLSelectElement>) {
   return event.target.value ? Number(event.target.value) : null
 }
 
-export function FilterBar({ filters, normalized, onChange, onReset }: FilterBarProps) {
+export function FilterBar({ activeDatePreset, filters, normalized, onApplyDatePreset, onChange, onReset }: FilterBarProps) {
   return (
     <section className="panel filters-panel">
       <div className="panel-header">
@@ -23,6 +33,19 @@ export function FilterBar({ filters, normalized, onChange, onReset }: FilterBarP
         <button className="ghost-button" onClick={onReset} type="button">
           Reset
         </button>
+      </div>
+
+      <div className="date-presets" role="group" aria-label="Quick date ranges">
+        {presetButtons.map((preset) => (
+          <button
+            className={`ghost-button preset-button${activeDatePreset === preset.value ? ' is-active' : ''}`}
+            key={preset.value}
+            onClick={() => onApplyDatePreset(preset.value)}
+            type="button"
+          >
+            {preset.label}
+          </button>
+        ))}
       </div>
 
       <div className="filters-grid">

@@ -15,6 +15,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { ChartTooltip } from '../components/ChartTooltip'
 import { NetworkGraph } from '../components/NetworkGraph'
 import type { DashboardMetrics } from '../types'
 
@@ -61,7 +62,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
               <CartesianGrid stroke="#2d244a" horizontal={false} />
               <XAxis allowDecimals={false} stroke="#9ca3af" type="number" />
               <YAxis dataKey="label" stroke="#9ca3af" type="category" width={150} />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Pairing: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Shared plays' }} />} />
               <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                 {metrics.pairings.map((pairing, index) => (
                   <Cell fill={palette[index % palette.length]} key={`${pairing.playerA}-${pairing.playerB}`} />
@@ -115,7 +116,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
               endAngle={-270}
             >
               <PolarAngleAxis dataKey="value" domain={[0, metrics.topPlayers[0]?.value ?? 1]} tick={false} type="number" />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Player: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
               <RadialBar background dataKey="value" cornerRadius={10} label={{ fill: '#e5e7eb', position: 'insideStart' }} />
             </RadialBarChart>
           </ResponsiveContainer>
@@ -131,7 +132,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
                   <Cell fill={palette[index % palette.length]} key={entry.label} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Table size: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Sessions' }} />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -148,14 +149,14 @@ export function SocialPage({ metrics }: SocialPageProps) {
         </div>
       </ChartCard>
 
-      <ChartCard subtitle="If this looked like a SaaS dashboard, this is your weekly retention pattern." title="Weekday Rhythm">
+      <ChartCard subtitle="A simple view of which days most often turn into game nights." title="Weekday Rhythm">
         <div className="chart-wrap">
           <ResponsiveContainer>
             <BarChart data={metrics.weekdayActivity}>
               <CartesianGrid stroke="#2d244a" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis allowDecimals={false} stroke="#9ca3af" />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelTitle="Day" seriesLabels={{ value: 'Plays' }} />} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {metrics.weekdayActivity.map((entry, index) => (
                   <Cell fill={palette[index % palette.length]} key={entry.label} />

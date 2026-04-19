@@ -8,6 +8,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { ChartTooltip } from '../components/ChartTooltip'
 import type { DashboardMetrics } from '../types'
 
 type ChallengesPageProps = {
@@ -24,7 +25,7 @@ export function ChallengesPage({ metrics }: ChallengesPageProps) {
               <CartesianGrid stroke="#2d244a" horizontal={false} />
               <XAxis allowDecimals={false} stroke="#9ca3af" type="number" />
               <YAxis dataKey="name" stroke="#9ca3af" type="category" width={150} />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Challenge: ${String(payload?.name ?? 'Unknown')}`} seriesLabels={{ progress: 'Logged plays' }} />} />
               <Bar dataKey="progress" fill="#f59e0b" radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>

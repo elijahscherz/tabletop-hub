@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { ChartTooltip } from '../components/ChartTooltip'
 import type { DashboardMetrics } from '../types'
 
 type CollectionPageProps = {
@@ -21,6 +22,8 @@ type CollectionPageProps = {
 }
 
 export function CollectionPage({ metrics }: CollectionPageProps) {
+  const currencyValue = (value: unknown) => (typeof value === 'number' ? `$${value.toFixed(2)}` : String(value ?? ''))
+
   const scatterData = metrics.collectionInsights.slice(0, 50).map((game) => ({
     label: game.name,
     x: game.pricePaid,
@@ -57,7 +60,7 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
               <CartesianGrid stroke="#2d244a" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelTitle="Year" seriesLabels={{ value: 'Spend' }} valueFormatter={currencyValue} />} />
               <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -69,7 +72,7 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
           <ResponsiveContainer>
             <PieChart>
               <Pie data={metrics.spendByTag} dataKey="value" innerRadius={54} nameKey="label" outerRadius={104} />
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Spend' }} valueFormatter={currencyValue} />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -82,7 +85,9 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
               <CartesianGrid stroke="#2d244a" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
-              <Tooltip />
+              <Tooltip
+                content={<ChartTooltip labelTitle="Year" seriesLabels={{ spend: 'Spend', plays: 'Plays', costPerPlay: 'Cost per play' }} valueFormatter={(value, entry) => (entry.dataKey === 'spend' || entry.dataKey === 'costPerPlay' ? currencyValue(value) : typeof value === 'number' ? value.toLocaleString() : String(value ?? ''))} />}
+              />
               <Line dataKey="spend" name="Spend" stroke="#f59e0b" strokeWidth={2} type="monotone" />
               <Line dataKey="plays" name="Plays" stroke="#8b5cf6" strokeWidth={2} type="monotone" />
               <Line dataKey="costPerPlay" name="Cost/play" stroke="#22c55e" strokeWidth={2} type="monotone" />
@@ -98,7 +103,10 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
               <CartesianGrid stroke="#2d244a" />
               <XAxis dataKey="x" name="Price paid" stroke="#9ca3af" type="number" />
               <YAxis dataKey="y" name="Hours played" stroke="#9ca3af" type="number" />
-              <Tooltip cursor={{ strokeDasharray: '4 4' }} />
+              <Tooltip
+                content={<ChartTooltip labelFormatter={(_, payload) => `Game: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ x: 'Price paid', y: 'Hours played', z: 'Play count' }} valueFormatter={(value, entry) => (entry.dataKey === 'x' ? currencyValue(value) : typeof value === 'number' ? value.toFixed(1) : String(value ?? ''))} />}
+                cursor={{ strokeDasharray: '4 4' }}
+              />
               <Scatter data={scatterData} fill="#22c55e" />
             </ScatterChart>
           </ResponsiveContainer>

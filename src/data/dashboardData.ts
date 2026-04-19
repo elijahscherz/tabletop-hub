@@ -34,6 +34,8 @@ export const defaultFilters: FilterState = {
   tagId: null,
 }
 
+const monthShortLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 function toMonthKey(playDateYmd: number) {
   const raw = String(playDateYmd)
   return `${raw.slice(0, 4)}-${raw.slice(4, 6)}`
@@ -102,12 +104,11 @@ function differenceInDays(fromDate: string, toDate: string) {
 }
 
 function buildMonthlyHeatmap(monthMap: Map<string, number>) {
-  const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const years = [...new Set([...monthMap.keys()].map((key) => key.slice(0, 4)))].sort()
   const maxValue = Math.max(...monthMap.values(), 1)
 
   return years.map<HeatmapRow>((year) => ({
-    cells: monthLabels.map((monthLabel, index) => {
+    cells: monthShortLabels.map((monthLabel, index) => {
       const key = `${year}-${String(index + 1).padStart(2, '0')}`
       const count = monthMap.get(key) ?? 0
       return {
@@ -135,11 +136,16 @@ function buildCalendarHeatmap(plays: EnrichedPlay[]) {
     const start = new Date(`${year}-01-01T00:00:00Z`)
     const end = new Date(`${year}-12-31T00:00:00Z`)
     const days = []
+    const months = []
 
     for (let current = new Date(start); current <= end; current.setUTCDate(current.getUTCDate() + 1)) {
       const date = current.toISOString().slice(0, 10)
       const count = byDate.get(date) ?? 0
       const week = Math.floor((current.getTime() - start.getTime()) / 86400000 / 7)
+
+      if (current.getUTCDate() === 1) {
+        months.push({ label: monthShortLabels[current.getUTCMonth()] ?? '', week })
+      }
 
       days.push({
         count,
@@ -150,7 +156,7 @@ function buildCalendarHeatmap(plays: EnrichedPlay[]) {
       })
     }
 
-    return { days, label: year }
+    return { days, label: year, months }
   })
 }
 

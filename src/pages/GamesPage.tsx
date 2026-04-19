@@ -13,6 +13,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { ChartTooltip } from '../components/ChartTooltip'
 import type { DashboardMetrics } from '../types'
 
 type GamesPageProps = {
@@ -104,20 +105,23 @@ export function GamesPage({ metrics }: GamesPageProps) {
                   <Cell fill={palette[index % palette.length]} key={entry.label} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </ChartCard>
 
-      <ChartCard subtitle="A product lens asks which titles earn repeat demand at different table sizes." title="Game Opportunity Map">
+      <ChartCard subtitle="A quick way to spot which games shine at different table sizes and come back to the table often." title="Game Opportunity Map">
         <div className="chart-wrap">
           <ResponsiveContainer>
             <ScatterChart margin={{ bottom: 12, left: 8, right: 8, top: 8 }}>
               <CartesianGrid stroke="#2d244a" />
               <XAxis dataKey="x" name="Average group size" stroke="#9ca3af" type="number" />
               <YAxis dataKey="y" name="Play count" stroke="#9ca3af" type="number" />
-              <Tooltip cursor={{ strokeDasharray: '4 4' }} />
+              <Tooltip
+                content={<ChartTooltip labelFormatter={(_, payload) => `Game: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ x: 'Average group size', y: 'Play count', z: 'Bubble size' }} />}
+                cursor={{ strokeDasharray: '4 4' }}
+              />
               <Scatter data={metrics.gameScatter} fill="#8b5cf6" />
             </ScatterChart>
           </ResponsiveContainer>
