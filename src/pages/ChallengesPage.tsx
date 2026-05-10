@@ -1,5 +1,4 @@
 import {
-  Bar,
   BarChart,
   CartesianGrid,
   ResponsiveContainer,
@@ -9,7 +8,10 @@ import {
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
 import { ChartTooltip } from '../components/ChartTooltip'
+import { NeonBar } from '../components/NeonBar'
 import type { DashboardMetrics } from '../types'
+
+const palette = ['#f59e0b', '#ec4899', '#8b5cf6', '#22c55e', '#38bdf8']
 
 type ChallengesPageProps = {
   metrics: DashboardMetrics
@@ -26,7 +28,7 @@ export function ChallengesPage({ metrics }: ChallengesPageProps) {
               <XAxis allowDecimals={false} stroke="#9ca3af" type="number" />
               <YAxis dataKey="name" stroke="#9ca3af" type="category" width={150} />
               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Challenge: ${String(payload?.name ?? 'Unknown')}`} seriesLabels={{ progress: 'Logged plays' }} />} />
-              <Bar dataKey="progress" fill="#f59e0b" radius={[0, 6, 6, 0]} />
+              <NeonBar data={metrics.challengeInsights.slice(0, 10).map((challenge) => ({ label: challenge.name, progress: challenge.progress }))} dataKey="progress" palette={palette} radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

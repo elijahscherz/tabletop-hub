@@ -1,21 +1,18 @@
 import { useMemo, useState } from 'react'
 import {
-  Bar,
   BarChart,
   CartesianGrid,
-  Cell,
-  Pie,
   PieChart,
-  PolarAngleAxis,
-  RadialBar,
-  RadialBarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { NeonBar } from '../components/NeonBar'
 import { ChartTooltip } from '../components/ChartTooltip'
+import { NeonPie } from '../components/NeonPie'
+import { NeonRadialBar } from '../components/NeonRadialBar'
 import { NetworkGraph } from '../components/NetworkGraph'
 import type { DashboardMetrics } from '../types'
 
@@ -25,7 +22,7 @@ type SocialPageProps = {
 
 const palette = ['#8b5cf6', '#ec4899', '#22c55e', '#f59e0b', '#38bdf8', '#f97316', '#14b8a6']
 
-export function SocialPage({ metrics }: SocialPageProps) {
+export function SocialSections({ metrics }: SocialPageProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(metrics.networkNodes[0]?.id ?? null)
 
   const networkDetail = useMemo(() => {
@@ -47,7 +44,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
   }, [metrics.networkEdges, metrics.playerInsights, selectedNodeId])
 
   return (
-    <div className="page-grid">
+    <>
       <ChartCard className="social-feature-card" subtitle="Who shows up most often in the selected slice." title="Most Frequent Players">
         <div className="chart-wrap social-ring-wrap">
           <div className="social-ring-center" aria-hidden="true">
@@ -55,22 +52,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
             <strong>{metrics.topPlayers[0]?.label ?? 'No data'}</strong>
             <span>{metrics.topPlayers[0]?.value ?? 0} plays</span>
           </div>
-          <ResponsiveContainer>
-            <RadialBarChart
-              barSize={12}
-              cx="50%"
-              cy="50%"
-              data={metrics.topPlayers.map((player, index) => ({ ...player, fill: palette[index % palette.length] }))}
-              innerRadius="42%"
-              outerRadius="82%"
-              startAngle={90}
-              endAngle={-270}
-            >
-              <PolarAngleAxis dataKey="value" domain={[0, metrics.topPlayers[0]?.value ?? 1]} tick={false} type="number" />
-              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Player: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
-              <RadialBar background={{ fill: 'rgba(255, 255, 255, 0.06)' }} dataKey="value" cornerRadius={10} label={{ fill: '#e5e7eb', position: 'insideStart' }} />
-            </RadialBarChart>
-          </ResponsiveContainer>
+          <NeonRadialBar data={metrics.topPlayers} palette={palette} />
         </div>
       </ChartCard>
 
@@ -82,11 +64,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis allowDecimals={false} stroke="#9ca3af" />
               <Tooltip content={<ChartTooltip labelTitle="Day" seriesLabels={{ value: 'Plays' }} />} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                {metrics.weekdayActivity.map((entry, index) => (
-                  <Cell fill={palette[index % palette.length]} key={entry.label} />
-                ))}
-              </Bar>
+              <NeonBar data={metrics.weekdayActivity} dataKey="value" palette={palette} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -136,11 +114,12 @@ export function SocialPage({ metrics }: SocialPageProps) {
               <XAxis allowDecimals={false} stroke="#9ca3af" type="number" />
               <YAxis dataKey="label" stroke="#9ca3af" type="category" width={150} />
               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Pairing: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Shared plays' }} />} />
-              <Bar dataKey="value" radius={[0, 8, 8, 0]}>
-                {metrics.pairings.map((pairing, index) => (
-                  <Cell fill={palette[index % palette.length]} key={`${pairing.playerA}-${pairing.playerB}`} />
-                ))}
-              </Bar>
+              <NeonBar
+                data={metrics.pairings.map((pairing) => ({ label: `${pairing.playerA}-${pairing.playerB}`, value: pairing.value }))}
+                dataKey="value"
+                palette={palette}
+                radius={[0, 8, 8, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -150,11 +129,7 @@ export function SocialPage({ metrics }: SocialPageProps) {
         <div className="chart-wrap">
           <ResponsiveContainer>
             <PieChart>
-              <Pie data={metrics.playerGroupSizes} dataKey="value" innerRadius={56} nameKey="label" outerRadius={100}>
-                {metrics.playerGroupSizes.map((entry, index) => (
-                  <Cell fill={palette[index % palette.length]} key={entry.label} />
-                ))}
-              </Pie>
+              <NeonPie data={metrics.playerGroupSizes} innerRadius={56} outerRadius={100} palette={palette} />
               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Table size: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Sessions' }} />} />
             </PieChart>
           </ResponsiveContainer>
@@ -194,6 +169,14 @@ export function SocialPage({ metrics }: SocialPageProps) {
           ))}
         </div>
       </ChartCard>
+    </>
+  )
+}
+
+export function SocialPage({ metrics }: SocialPageProps) {
+  return (
+    <div className="page-grid">
+      <SocialSections metrics={metrics} />
     </div>
   )
 }

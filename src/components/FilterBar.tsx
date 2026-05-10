@@ -1,4 +1,4 @@
-import type { ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import type { FilterState, NormalizedData } from '../types'
 
 type FilterBarProps = {
@@ -18,131 +18,157 @@ const presetButtons = [
   { label: 'All time', value: 'all' },
 ] as const
 
+const filterExpandedStorageKey = 'dashboard.filtersExpanded'
+
 function parseNullableNumber(event: ChangeEvent<HTMLSelectElement>) {
   return event.target.value ? Number(event.target.value) : null
 }
 
 export function FilterBar({ activeDatePreset, filters, normalized, onApplyDatePreset, onChange, onReset }: FilterBarProps) {
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false
+    }
+
+    return window.localStorage.getItem(filterExpandedStorageKey) === 'true'
+  })
+
+  useEffect(() => {
+    window.localStorage.setItem(filterExpandedStorageKey, String(isExpanded))
+  }, [isExpanded])
+
   return (
-    <section className="panel filters-panel">
+    <section className={`panel filters-panel${isExpanded ? ' is-expanded' : ' is-collapsed'}`}>
       <div className="panel-header">
         <div>
           <h2>Filters</h2>
-          <p>Trim the dashboard by time, people, games, and table shape.</p>
+          {isExpanded && (<p>Trim the dashboard by time, people, games, and table shape</p>)}
         </div>
-        <button className="ghost-button" onClick={onReset} type="button">
-          Reset
-        </button>
-      </div>
-
-      <div className="date-presets" role="group" aria-label="Quick date ranges">
-        {presetButtons.map((preset) => (
+        <div className="filters-actions">
           <button
-            className={`ghost-button preset-button${activeDatePreset === preset.value ? ' is-active' : ''}`}
-            key={preset.value}
-            onClick={() => onApplyDatePreset(preset.value)}
+            aria-expanded={isExpanded}
+            className="ghost-button"
+            onClick={() => setIsExpanded((current) => !current)}
             type="button"
           >
-            {preset.label}
+            {isExpanded ? 'Hide filters' : 'Show filters'}
           </button>
-        ))}
+          <button className="ghost-button" onClick={onReset} type="button">
+            Reset
+          </button>
+        </div>
       </div>
 
-      <div className="filters-grid">
-        <label>
-          <span>Start date</span>
-          <input
-            type="date"
-            value={filters.startDate}
-            onChange={(event) => onChange({ ...filters, startDate: event.target.value })}
-          />
-        </label>
+      <div className="filters-body" hidden={!isExpanded}>
+        <div className="date-presets" role="group" aria-label="Quick date ranges">
+          {presetButtons.map((preset) => (
+            <button
+              className={`ghost-button preset-button${activeDatePreset === preset.value ? ' is-active' : ''}`}
+              key={preset.value}
+              onClick={() => onApplyDatePreset(preset.value)}
+              type="button"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
 
-        <label>
-          <span>End date</span>
-          <input
-            type="date"
-            value={filters.endDate}
-            onChange={(event) => onChange({ ...filters, endDate: event.target.value })}
-          />
-        </label>
+        <div className="filters-grid">
+          <label>
+            <span>Start date</span>
+            <input
+              type="date"
+              value={filters.startDate}
+              onChange={(event) => onChange({ ...filters, startDate: event.target.value })}
+            />
+          </label>
 
-        <label>
-          <span>Player</span>
-          <select
-            value={filters.playerId ?? ''}
-            onChange={(event) => onChange({ ...filters, playerId: parseNullableNumber(event) })}
-          >
-            <option value="">All players</option>
-            {normalized.players
-              .filter((player) => !player.isAnonymous)
-              .map((player) => (
-                <option key={player.id} value={player.id}>
-                  {player.name}
+          <label>
+            <span>End date</span>
+            <input
+              type="date"
+              value={filters.endDate}
+              onChange={(event) => onChange({ ...filters, endDate: event.target.value })}
+            />
+          </label>
+
+          <label>
+            <span>Player</span>
+            <select
+              value={filters.playerId ?? ''}
+              onChange={(event) => onChange({ ...filters, playerId: parseNullableNumber(event) })}
+            >
+              <option value="">All players</option>
+              {normalized.players
+                .filter((player) => !player.isAnonymous)
+                .map((player) => (
+                  <option key={player.id} value={player.id}>
+                    {player.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Game</span>
+            <select
+              value={filters.gameId ?? ''}
+              onChange={(event) => onChange({ ...filters, gameId: parseNullableNumber(event) })}
+            >
+              <option value="">All games</option>
+              {normalized.games.map((game) => (
+                <option key={game.id} value={game.id}>
+                  {game.name}
                 </option>
               ))}
-          </select>
-        </label>
+            </select>
+          </label>
 
-        <label>
-          <span>Game</span>
-          <select
-            value={filters.gameId ?? ''}
-            onChange={(event) => onChange({ ...filters, gameId: parseNullableNumber(event) })}
-          >
-            <option value="">All games</option>
-            {normalized.games.map((game) => (
-              <option key={game.id} value={game.id}>
-                {game.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            <span>Tag</span>
+            <select
+              value={filters.tagId ?? ''}
+              onChange={(event) => onChange({ ...filters, tagId: parseNullableNumber(event) })}
+            >
+              <option value="">All tags</option>
+              {normalized.tags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          <span>Tag</span>
-          <select
-            value={filters.tagId ?? ''}
-            onChange={(event) => onChange({ ...filters, tagId: parseNullableNumber(event) })}
-          >
-            <option value="">All tags</option>
-            {normalized.tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            <span>Player count</span>
+            <select
+              value={filters.playerCount ?? ''}
+              onChange={(event) => onChange({ ...filters, playerCount: parseNullableNumber(event) })}
+            >
+              <option value="">All table sizes</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((count) => (
+                <option key={count} value={count}>
+                  {count} players
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          <span>Player count</span>
-          <select
-            value={filters.playerCount ?? ''}
-            onChange={(event) => onChange({ ...filters, playerCount: parseNullableNumber(event) })}
-          >
-            <option value="">All table sizes</option>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((count) => (
-              <option key={count} value={count}>
-                {count} players
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          <span>Location</span>
-          <select
-            value={filters.locationId ?? ''}
-            onChange={(event) => onChange({ ...filters, locationId: parseNullableNumber(event) })}
-          >
-            <option value="">All locations</option>
-            {normalized.locations.map((location) => (
-              <option key={location.id} value={location.id}>
-                {location.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            <span>Location</span>
+            <select
+              value={filters.locationId ?? ''}
+              onChange={(event) => onChange({ ...filters, locationId: parseNullableNumber(event) })}
+            >
+              <option value="">All locations</option>
+              {normalized.locations.map((location) => (
+                <option key={location.id} value={location.id}>
+                  {location.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
     </section>
   )

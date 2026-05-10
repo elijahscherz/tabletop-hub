@@ -161,6 +161,9 @@ export type OwnedGame = {
 }
 
 export type PlayerInsight = {
+  averageGroupSize: number
+  averagePlayTime: number
+  favoriteWeekday: string
   favoriteGames: CountDatum[]
   mostCommonPartners: CountDatum[]
   monthlyActivity: CountDatum[]

@@ -13,6 +13,29 @@ type HoveredDay = {
   y: number
 }
 
+function getCalendarCellStyle(day: CalendarYear['days'][number]) {
+  if (day.count === 0) {
+    return {
+      background: 'rgba(255, 255, 255, 0.015)',
+      boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.015)',
+      opacity: 0.06,
+    }
+  }
+
+  const normalized = day.intensity / 100
+  const presence = Math.sqrt(normalized)
+  const glowStrength = normalized ** 2.2
+  const peakBoost = normalized > 0.82 ? ((normalized - 0.82) / 0.18) ** 2 : 0
+
+  return {
+    background: `linear-gradient(135deg, rgba(56, 189, 248, ${0.42 + presence * 0.16 + glowStrength * 0.2 + peakBoost * 0.12}), rgba(236, 72, 153, ${0.28 + presence * 0.18 + glowStrength * 0.26 + peakBoost * 0.16}))`,
+    borderColor: `rgba(255, 255, 255, ${0.08 + glowStrength * 0.16 + peakBoost * 0.12})`,
+    boxShadow: `inset 0 0 ${8 + glowStrength * 8}px rgba(255, 255, 255, ${0.02 + glowStrength * 0.08}), 0 0 ${6 + glowStrength * 12 + peakBoost * 10}px rgba(56, 189, 248, ${0.08 + glowStrength * 0.12}), 0 0 ${10 + glowStrength * 18 + peakBoost * 14}px rgba(236, 72, 153, ${0.12 + glowStrength * 0.18 + peakBoost * 0.14})`,
+    filter: `saturate(${1.02 + glowStrength * 0.85 + peakBoost * 0.3}) brightness(${1 + glowStrength * 0.22 + peakBoost * 0.08})`,
+    opacity: 0.76 + presence * 0.1 + glowStrength * 0.14,
+  }
+}
+
 export function CalendarHeatmap({ years }: CalendarHeatmapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [hoveredDay, setHoveredDay] = useState<HoveredDay | null>(null)
@@ -55,17 +78,7 @@ export function CalendarHeatmap({ years }: CalendarHeatmapProps) {
                       className="calendar-cell"
                       onMouseEnter={(event) => handleMouseEnter(day, event)}
                       onMouseLeave={() => setHoveredDay((current) => (current?.date === day.date ? null : current))}
-                      style={{
-                        background:
-                          day.count > 0
-                            ? `linear-gradient(180deg, rgba(34, 197, 94, ${0.1 + day.intensity / 120}), rgba(168, 85, 247, ${0.06 + day.intensity / 80}))`
-                            : 'rgba(255, 255, 255, 0.03)',
-                        boxShadow:
-                          day.count > 0
-                            ? `inset 0 0 10px rgba(255, 255, 255, 0.04), 0 0 ${8 + day.intensity / 6}px rgba(168, 85, 247, ${0.08 + day.intensity / 180})`
-                            : 'inset 0 0 8px rgba(255, 255, 255, 0.02)',
-                        opacity: day.count > 0 ? 0.45 + day.intensity / 180 : 0.16,
-                      }}
+                      style={getCalendarCellStyle(day)}
                       title={`${day.date}: ${day.count} plays`}
                     />
                   </div>

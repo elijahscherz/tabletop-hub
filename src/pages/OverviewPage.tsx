@@ -2,9 +2,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  Cell,
   Legend,
-  Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
@@ -15,6 +13,7 @@ import { CalendarHeatmap } from '../components/CalendarHeatmap'
 import { ChartCard } from '../components/ChartCard'
 import { ChartTooltip } from '../components/ChartTooltip'
 import { HeatmapGrid } from '../components/HeatmapGrid'
+import { NeonPie } from '../components/NeonPie'
 import type { DashboardMetrics } from '../types'
 
 type OverviewPageProps = {
@@ -26,22 +25,9 @@ const palette = ['#8b5cf6', '#ec4899', '#22c55e', '#f59e0b', '#38bdf8', '#f97316
 export function OverviewPage({ metrics }: OverviewPageProps) {
   return (
     <div className="page-grid">
-      <section className="hero-band full-width">
-        <div>
-          <p className="eyebrow">Overview</p>
-          <h3>Play history at a glance</h3>
-          <p>A quick look at your rhythms, favorite tables, and the stretches where game night was especially lively.</p>
-        </div>
-        <div className="hero-orbs" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-      </section>
-
-      <section className="stats-grid full-width">
+      <section className="stats-grid full-width overview-stats-grid">
         {metrics.keyStats.map((stat) => (
-          <article className="stat-card" key={stat.label}>
+          <article className="stat-card overview-stat-card" key={stat.label}>
             <p>{stat.label}</p>
             <strong>{stat.value}</strong>
             <span>{stat.note}</span>
@@ -49,15 +35,16 @@ export function OverviewPage({ metrics }: OverviewPageProps) {
         ))}
       </section>
 
-      <ChartCard subtitle="Monthly play history across the current filter slice." title="Plays Over Time">
-        <div className="chart-wrap tall">
+      <ChartCard className="full-width overview-timeline-card" subtitle="Monthly play history across the current filter slice." title="Plays Over Time">
+        <div className="chart-wrap tall overview-timeline-wrap">
           <ResponsiveContainer>
-            <AreaChart data={metrics.monthlyActivity}>
+            <AreaChart data={metrics.monthlyActivity} margin={{ bottom: 8, left: 4, right: 8, top: 8 }}>
               <CartesianGrid stroke="#2d244a" vertical={false} />
-              <XAxis dataKey="label" hide />
+              <XAxis dataKey="label" minTickGap={28} stroke="#94a3b8" tickLine={false} />
               <YAxis allowDecimals={false} stroke="#9ca3af" />
+              <Legend align="right" iconType="circle" verticalAlign="top" wrapperStyle={{ paddingBottom: '0.6rem' }} />
               <Tooltip content={<ChartTooltip labelTitle="Month" seriesLabels={{ value: 'Plays' }} />} />
-              <Area dataKey="value" fill="url(#overviewGlow)" stroke="#a855f7" strokeWidth={3} type="monotone" />
+              <Area dataKey="value" fill="url(#overviewGlow)" name="Plays" stroke="#a855f7" strokeWidth={3} type="monotone" />
               <defs>
                 <linearGradient id="overviewGlow" x1="0" x2="0" y1="0" y2="1">
                   <stop offset="5%" stopColor="#ec4899" stopOpacity={0.9} />
@@ -69,11 +56,11 @@ export function OverviewPage({ metrics }: OverviewPageProps) {
         </div>
       </ChartCard>
 
-      <ChartCard className="overview-wide-card" subtitle="A seasonal intensity map makes spikes and slumps obvious immediately." title="Year-Month Heatmap">
+      <ChartCard className="overview-wide-card overview-heatmap-card" subtitle="A seasonal intensity map makes spikes and slumps obvious immediately." title="Year-Month Heatmap">
         <HeatmapGrid rows={metrics.monthlyHeatmap} />
       </ChartCard>
 
-      <ChartCard className="overview-side-card" subtitle="A nice long-view check on whether overall activity and game variety have moved together over time." title="Yearly Diversity">
+      <ChartCard className="overview-side-card" subtitle="A quick read on how often you played and how wide the rotation stayed." title="Activity vs Variety">
         <div className="chart-wrap overview-side-chart">
           <ResponsiveContainer>
             <AreaChart data={metrics.yearlyDiversity}>
@@ -89,7 +76,7 @@ export function OverviewPage({ metrics }: OverviewPageProps) {
         </div>
       </ChartCard>
 
-      <ChartCard className="overview-wide-card" subtitle="The day-level view shows true streaks, dead zones, and bursts that monthly charts smooth over." title="Calendar Heatmap">
+      <ChartCard className="overview-wide-card overview-calendar-card" subtitle="The day-level view shows true streaks, dead zones, and bursts that monthly charts smooth over." title="Calendar Heatmap">
         <CalendarHeatmap years={metrics.calendarHeatmap} />
       </ChartCard>
 
@@ -97,20 +84,13 @@ export function OverviewPage({ metrics }: OverviewPageProps) {
         <div className="chart-wrap">
           <ResponsiveContainer>
             <PieChart>
-              <Pie
-                cx="50%"
-                cy="50%"
+              <NeonPie
                 data={metrics.venueShare}
-                dataKey="value"
                 innerRadius={60}
-                nameKey="label"
                 outerRadius={100}
+                palette={palette}
                 paddingAngle={4}
-              >
-                {metrics.venueShare.map((entry, index) => (
-                  <Cell fill={palette[index % palette.length]} key={entry.label} />
-                ))}
-              </Pie>
+              />
               <Legend />
               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Venue: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Sessions' }} />} />
             </PieChart>

@@ -1,10 +1,8 @@
 import {
-  Bar,
   BarChart,
   CartesianGrid,
   Line,
   LineChart,
-  Pie,
   PieChart,
   ResponsiveContainer,
   Scatter,
@@ -14,12 +12,16 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { NeonBar } from '../components/NeonBar'
+import { NeonPie } from '../components/NeonPie'
 import { ChartTooltip } from '../components/ChartTooltip'
 import type { DashboardMetrics } from '../types'
 
 type CollectionPageProps = {
   metrics: DashboardMetrics
 }
+
+const palette = ['#f59e0b', '#8b5cf6', '#ec4899', '#22c55e', '#38bdf8', '#f97316', '#14b8a6']
 
 function toBggUrl(bggId: number | null) {
   return bggId ? `https://boardgamegeek.com/boardgame/${bggId}` : null
@@ -105,7 +107,7 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
               <XAxis dataKey="label" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
               <Tooltip content={<ChartTooltip labelTitle="Year" seriesLabels={{ value: 'Value' }} valueFormatter={currencyValue} />} />
-              <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+              <NeonBar data={metrics.priceByYear} dataKey="value" palette={[palette[0] ?? '#f59e0b']} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -115,8 +117,8 @@ export function CollectionPage({ metrics }: CollectionPageProps) {
         <div className="chart-wrap">
           <ResponsiveContainer>
             <PieChart>
-              <Pie data={metrics.spendByTag} dataKey="value" innerRadius={54} nameKey="label" outerRadius={104} />
-               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Value' }} valueFormatter={currencyValue} />} />
+              <NeonPie data={metrics.spendByTag} innerRadius={54} outerRadius={104} palette={palette} />
+              <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Value' }} valueFormatter={currencyValue} />} />
             </PieChart>
           </ResponsiveContainer>
         </div>

@@ -2,8 +2,6 @@ import type { CSSProperties } from 'react'
 import { useState } from 'react'
 import {
   CartesianGrid,
-  Cell,
-  Pie,
   PieChart,
   ResponsiveContainer,
   Scatter,
@@ -13,6 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ChartCard } from '../components/ChartCard'
+import { NeonPie } from '../components/NeonPie'
 import { ChartTooltip } from '../components/ChartTooltip'
 import type { DashboardMetrics } from '../types'
 
@@ -104,11 +103,7 @@ export function GamesPage({ metrics }: GamesPageProps) {
         <div className="chart-wrap">
           <ResponsiveContainer>
             <PieChart>
-              <Pie data={metrics.tagBreakdown} dataKey="value" innerRadius={50} nameKey="label" outerRadius={104}>
-                {metrics.tagBreakdown.map((entry, index) => (
-                  <Cell fill={palette[index % palette.length]} key={entry.label} />
-                ))}
-              </Pie>
+              <NeonPie data={metrics.tagBreakdown} innerRadius={50} outerRadius={104} palette={palette} />
               <Tooltip content={<ChartTooltip labelFormatter={(_, payload) => `Tag: ${String(payload?.label ?? 'Unknown')}`} seriesLabels={{ value: 'Plays' }} />} />
             </PieChart>
           </ResponsiveContainer>

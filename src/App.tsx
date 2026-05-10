@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { FilterBar } from './components/FilterBar'
 import { buildMetrics, defaultFilters, normalizeData } from './data/dashboardData'
@@ -9,7 +9,6 @@ import { CollectionPage } from './pages/CollectionPage'
 import { GamesPage } from './pages/GamesPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { PlayersPage } from './pages/PlayersPage'
-import { SocialPage } from './pages/SocialPage'
 import { ToolsPage } from './pages/ToolsPage'
 
 const normalized = normalizeData()
@@ -91,18 +90,21 @@ function App() {
   const activeDatePreset = getActiveDatePreset(filters, latestPlayDate) ?? null
 
   return (
-    <AppShell>
-      <FilterBar
-        activeDatePreset={activeDatePreset}
-        filters={filters}
-        normalized={normalized}
-        onApplyDatePreset={(preset) => setFilters((current) => ({ ...current, ...buildDateRangePreset(latestPlayDate, preset) }))}
-        onChange={setFilters}
-        onReset={() => setFilters(initialFilters)}
-      />
+    <AppShell
+      headerAside={
+        <FilterBar
+          activeDatePreset={activeDatePreset}
+          filters={filters}
+          normalized={normalized}
+          onApplyDatePreset={(preset) => setFilters((current) => ({ ...current, ...buildDateRangePreset(latestPlayDate, preset) }))}
+          onChange={setFilters}
+          onReset={() => setFilters(initialFilters)}
+        />
+      }
+    >
       <Routes>
         <Route element={<OverviewPage metrics={metrics} />} path="/" />
-        <Route element={<SocialPage metrics={metrics} />} path="/social" />
+        <Route element={<Navigate replace to="/players" />} path="/social" />
         <Route element={<GamesPage metrics={metrics} />} path="/games" />
         <Route element={<CollectionPage metrics={metrics} />} path="/collection" />
         <Route element={<ChallengesPage metrics={metrics} />} path="/challenges" />

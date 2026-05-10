@@ -160,6 +160,56 @@ function buildCalendarHeatmap(plays: EnrichedPlay[]) {
   })
 }
 
+function formatDiversityMonthLabel(monthKey: string) {
+  const year = monthKey.slice(0, 4)
+  const monthIndex = Number(monthKey.slice(5, 7)) - 1
+  return `${monthShortLabels[monthIndex] ?? monthKey.slice(5, 7)} ${year}`
+}
+
+function formatCompactMonthLabel(monthKey: string) {
+  const year = monthKey.slice(2, 4)
+  const monthIndex = Number(monthKey.slice(5, 7)) - 1
+  return `${monthShortLabels[monthIndex] ?? monthKey.slice(5, 7)} '${year}`
+}
+
+function buildDiversitySeries(plays: EnrichedPlay[]) {
+  const uniqueMonths = new Set(plays.map((play) => play.monthKey)).size
+  const granularity = uniqueMonths <= 18 ? 'month' : uniqueMonths <= 48 ? 'quarter' : 'year'
+  const bucketCounts = new Map<string, number>()
+  const bucketGames = new Map<string, Set<number>>()
+  const bucketLabels = new Map<string, string>()
+
+  for (const play of plays) {
+    let bucketKey: string
+    let bucketLabel: string
+
+    if (granularity === 'month') {
+      bucketKey = play.monthKey
+      bucketLabel = formatDiversityMonthLabel(play.monthKey)
+    } else if (granularity === 'quarter') {
+      const monthNumber = Number(play.monthKey.slice(5, 7))
+      const quarter = Math.floor((monthNumber - 1) / 3) + 1
+      bucketKey = `${play.year}-Q${quarter}`
+      bucketLabel = `Q${quarter} ${play.year}`
+    } else {
+      bucketKey = String(play.year)
+      bucketLabel = String(play.year)
+    }
+
+    bucketCounts.set(bucketKey, (bucketCounts.get(bucketKey) ?? 0) + 1)
+    bucketGames.set(bucketKey, (bucketGames.get(bucketKey) ?? new Set<number>()).add(play.gameId))
+    bucketLabels.set(bucketKey, bucketLabel)
+  }
+
+  return [...bucketCounts.entries()]
+    .sort((left, right) => left[0].localeCompare(right[0]))
+    .map(([key, value]) => ({
+      label: bucketLabels.get(key) ?? key,
+      plays: value,
+      uniqueGames: bucketGames.get(key)?.size ?? 0,
+    }))
+}
+
 function buildChallengeInsight(challenge: RawChallenge, plays: EnrichedPlay[]) {
   const scopedPlays = plays.filter((play) => {
     if (challenge.startDate) {
@@ -371,15 +421,17 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
       pricePaid: number
     }
   >()
-  const diversityMap = new Map<string, Set<number>>()
   const perPlayer = new Map<
     string,
     {
+      durations: number[]
       favoriteGames: Map<string, number>
+      groupSizes: number[]
       tags: Map<string, number>
       locations: Map<string, number>
       partners: Map<string, number>
       monthly: Map<string, number>
+      weekdays: Map<string, number>
       plays: number
       wins: number
     }
@@ -398,7 +450,6 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
     monthMap.set(play.monthKey, (monthMap.get(play.monthKey) ?? 0) + 1)
     yearMap.set(String(play.year), (yearMap.get(String(play.year)) ?? 0) + 1)
     playerCountMap.set(`${play.playerCount} players`, (playerCountMap.get(`${play.playerCount} players`) ?? 0) + 1)
-    diversityMap.set(String(play.year), (diversityMap.get(String(play.year)) ?? new Set<number>()).add(play.gameId))
 
     const weekday = parsePlayDate(play.playDateYmd).toLocaleDateString('en-US', {
       timeZone: 'UTC',
@@ -448,22 +499,30 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
       topPlayersMap.set(player.name, (topPlayersMap.get(player.name) ?? 0) + 1)
 
       const playerStats = perPlayer.get(player.name) ?? {
+        durations: [],
         favoriteGames: new Map<string, number>(),
+        groupSizes: [],
         locations: new Map<string, number>(),
         monthly: new Map<string, number>(),
         partners: new Map<string, number>(),
         plays: 0,
         tags: new Map<string, number>(),
+        weekdays: new Map<string, number>(),
         wins: 0,
       }
 
+      if (play.durationMin > 0) {
+        playerStats.durations.push(play.durationMin)
+      }
       playerStats.favoriteGames.set(play.gameName, (playerStats.favoriteGames.get(play.gameName) ?? 0) + 1)
+      playerStats.groupSizes.push(play.playerCount)
       playerStats.locations.set(play.locationName, (playerStats.locations.get(play.locationName) ?? 0) + 1)
       playerStats.monthly.set(play.monthKey, (playerStats.monthly.get(play.monthKey) ?? 0) + 1)
       playerStats.plays += 1
       for (const tagName of play.tagNames) {
         playerStats.tags.set(tagName, (playerStats.tags.get(tagName) ?? 0) + 1)
       }
+      playerStats.weekdays.set(weekday, (playerStats.weekdays.get(weekday) ?? 0) + 1)
       if (player.winner) {
         playerStats.wins += 1
       }
@@ -529,13 +588,7 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
     .sort((left, right) => left[0].localeCompare(right[0]))
     .map(([label, value]) => ({ label, value }))
 
-  const yearlyDiversity = [...yearMap.entries()]
-    .sort((left, right) => left[0].localeCompare(right[0]))
-    .map(([label, value]) => ({
-      label,
-      plays: value,
-      uniqueGames: diversityMap.get(label)?.size ?? 0,
-    }))
+  const yearlyDiversity = buildDiversitySeries(filteredPlays)
 
   const playerGroupSizes = [...playerCountMap.entries()]
     .sort((left, right) => Number.parseInt(left[0], 10) - Number.parseInt(right[0], 10))
@@ -594,14 +647,17 @@ export function buildMetrics(normalized: NormalizedData, filters: FilterState): 
 
   const playerInsights: PlayerInsight[] = [...perPlayer.entries()]
     .map(([playerName, stats]) => ({
+      averageGroupSize: Number(average(stats.groupSizes).toFixed(1)),
+      averagePlayTime: Number(average(stats.durations).toFixed(0)),
+      favoriteWeekday: [...stats.weekdays.entries()].sort((left, right) => right[1] - left[1])[0]?.[0] ?? 'No data',
       favoriteGames: [...stats.favoriteGames.entries()]
         .sort((left, right) => right[1] - left[1])
         .slice(0, 3)
         .map(([label, value]) => ({ label, value })),
       monthlyActivity: [...stats.monthly.entries()]
         .sort((left, right) => left[0].localeCompare(right[0]))
-        .slice(-6)
-        .map(([label, value]) => ({ label, value })),
+        .slice(-12)
+        .map(([label, value]) => ({ label: formatCompactMonthLabel(label), value })),
       mostCommonPartners: [...stats.partners.entries()]
         .sort((left, right) => right[1] - left[1])
         .slice(0, 3)
